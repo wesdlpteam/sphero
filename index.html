@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sphero Space Academy</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        
+        /* Custom Animations */
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.6); }
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .animate-slide-up {
+            animation: slide-up 0.5s ease-out forwards;
+        }
+
+        .animate-scanline {
+            animation: scanline 2s linear infinite;
+        }
+
+        .animate-blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        .level-card-locked {
+            background-image: repeating-linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.03),
+                rgba(255, 255, 255, 0.03) 10px,
+                rgba(255, 255, 255, 0.01) 10px,
+                rgba(255, 255, 255, 0.01) 20px
+            );
+        }
+
+        /* CRT Effect for Briefing */
+        .crt-overlay {
+            background: rgba(18, 16, 16, 0);
+            position: relative;
+            overflow: hidden;
+        }
+        .crt-overlay::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Confetti Styles */
+        .confetti-piece {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background-color: #ffd700;
+            top: -20px;
+            z-index: 9999;
+            opacity: 0;
+        }
+
+        @keyframes star-fall {
+            0% { top: -10%; transform: translateX(0) rotate(0deg); opacity: 1; }
+            100% { top: 110%; transform: translateX(var(--drift)) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- Data Structure ---
+        const GAME_DATA = [
+            {
+                id: 'rank_1',
+                title: 'Cadet Class',
+                subtitle: 'Navigation & Angles',
+                icon: 'rocket',
+                color: 'blue',
+                challenges: [
+                    {
+                        id: 'c1_1',
+                        title: 'System Check',
+                        mission: 'Drive forward for 2 seconds, stop, and reverse back to the start.',
+                        hint: 'Use the "Roll" block. Remember to turn your heading to 180 degrees to go backward!'
+                    },
+                    {
+                        id: 'c1_2',
+                        title: 'The Perfect Corner',
+                        mission: 'Drive forward, make a perfect 90-degree turn, and drive forward again.',
+                        hint: 'Right turns are 90 degrees. Add a 1-second "Delay" block before turning so the robot balances.'
+                    },
+                    {
+                        id: 'c1_3',
+                        title: 'Safe Landing',
+                        mission: 'Drive forward and stop exactly inside a target (like a hula hoop or taped square).',
+                        hint: 'You will need to adjust your Duration (time) and Speed numbers so you don\'t overshoot the target.'
+                    }
+                ]
+            },
+            {
+                id: 'rank_2',
+                title: 'Pilot Class',
+                subtitle: 'Loops & Sequences',
+                icon: 'navigation',
+                color: 'purple',
+                challenges: [
+                    {
+                        id: 'c2_1',
+                        title: 'Loop-de-Loop',
+                        mission: 'Use a "Loop" block to make your robot spin around 3 times.',
+                        hint: 'Don\'t write the code 3 times. Write one spin and put it inside a Loop block.'
+                    },
+                    {
+                        id: 'c2_2',
+                        title: 'Traffic Control',
+                        mission: 'Turn green, drive forward. Turn yellow, slow down. Turn red, stop!',
+                        hint: 'You will need "Main LED" blocks to change colours and different "Roll" blocks for speed.'
+                    },
+                    {
+                        id: 'c2_3',
+                        title: 'Asteroid Slalom',
+                        mission: 'Set up 3 bottle top lids. Zig-zag your robot around them without crashing.',
+                        hint: 'Use small angles like 45 degrees left, then 45 degrees right. Test and debug!'
+                    }
+                ]
+            },
+            {
+                id: 'rank_3',
+                title: 'Commander Class',
+                subtitle: 'Precision Driving',
+                icon: 'star',
+                color: 'orange',
+                challenges: [
+                    {
+                        id: 'c3_1',
+                        title: 'The Boomerang',
+                        mission: 'Drive to a target exactly 1 metre away, turn 180 degrees, and return to base.',
+                        hint: 'You might need a tape measure! Adjust your Speed and Duration numbers to be precise.'
+                    },
+                    {
+                        id: 'c3_2',
+                        title: 'Space Siren',
+                        mission: 'Make the robot flash red and blue while driving fast.',
+                        hint: 'Put the colour blocks inside a "Loop" block alongside your movement blocks.'
+                    },
+                    {
+                        id: 'c3_3',
+                        title: 'Square Orbit',
+                        mission: 'Program your robot to drive in a perfect square shape.',
+                        hint: 'Sphero directions do not reset! Your 4 Roll blocks need headings of 0°, 90°, 180°, and finally 270°.'
+                    }
+                ]
+            },
+            {
+                id: 'rank_4',
+                title: 'Legend Class',
+                subtitle: 'Master Challenges',
+                icon: 'crown',
+                color: 'rose',
+                challenges: [
+                    {
+                        id: 'c4_1',
+                        title: 'Parallel Park',
+                        mission: 'Drive forward past a parking spot, then reverse into it.',
+                        hint: 'This requires careful planning. Break the problem down into small steps.'
+                    },
+                    {
+                        id: 'c4_2',
+                        title: 'S.O.S. Signal',
+                        mission: 'Stationary challenge: Flash the lights 3 quick, 3 slow, 3 quick.',
+                        hint: 'Use short delays (0.2s) for quick flashes and long delays (1s) for slow flashes.'
+                    },
+                    {
+                        id: 'c4_3',
+                        title: 'Blind Navigator',
+                        mission: 'Turn your back to the robot. Have a partner read out instructions for you to code.',
+                        hint: 'Communication is key! Your partner must use clear directional language and numbers.'
+                    }
+                ]
+            }
+        ];
+
+        // --- Icons ---
+        const Icons = {
+            rocket: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>,
+            navigation: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>,
+            star: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+            crown: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>,
+            lock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+            check: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+            chevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+            refresh: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
+            play: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        };
+
+        // --- Confetti Effect ---
+        const fireLevelUpConfetti = () => {
+            const colors = ['#60a5fa', '#a78bfa', '#f472b6', '#34d399', '#fbbf24'];
+            for (let i = 0; i < 150; i++) {
+                const piece = document.createElement('div');
+                piece.classList.add('confetti-piece');
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.left = `${Math.random() * 100}vw`;
+                piece.style.animation = `star-fall ${Math.random() * 2 + 2}s linear forwards`;
+                piece.style.setProperty('--drift', `${Math.random() * 200 - 100}px`);
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 4500);
+            }
+        };
+
+        // --- Mission Briefing Component (New) ---
+        const MissionBriefing = ({ onStart }) => {
+            const [text, setText] = useState("");
+            const fullText = "INCOMING TRANSMISSION...\nSOURCE: SPHERO COMMAND\nTARGET: WESLEY COLLEGE YEAR 3\n\nHELLO, JUNIOR CADETS.\n\nWELCOME TO THE INTERMEDIATE SPACE ACADEMY.\nYOUR MISSION: MASTER NAVIGATION, ANGLES, AND LOOPS.\n\nYOU WILL NEED TO TEST AND DEBUG YOUR CODE.\nWORK TOGETHER AND BE PRECISE.\n\nTHE GALAXY IS WAITING.\n\nEND TRANSMISSION.";
+            
+            useEffect(() => {
+                let index = 0;
+                const timer = setInterval(() => {
+                    setText(fullText.slice(0, index));
+                    index++;
+                    if (index > fullText.length) clearInterval(timer);
+                }, 35); // Typing speed
+                return () => clearInterval(timer);
+            }, []);
+
+            return (
+                <div className="fixed inset-0 z-50 bg-black flex items-center justify-center p-4 crt-overlay font-mono">
+                    <div className="max-w-2xl w-full border-2 border-green-500/50 bg-slate-900/90 p-8 rounded-lg shadow-[0_0_50px_rgba(34,197,94,0.2)] relative overflow-hidden">
+                        
+                        {/* Scanline overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-500/5 to-transparent h-4 w-full animate-scanline pointer-events-none"></div>
+
+                        <div className="flex items-center gap-3 mb-6 border-b border-green-500/30 pb-4">
+                            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-green-500 font-bold tracking-widest uppercase">Live Feed // Wesley College Year 3</span>
+                        </div>
+
+                        <div className="min-h-[200px] text-green-400 whitespace-pre-line leading-relaxed text-lg mb-8 drop-shadow-[0_0_5px_rgba(34,197,94,0.8)]">
+                            {text}<span className="animate-blink">_</span>
+                        </div>
+
+                        <button 
+                            onClick={onStart}
+                            className="w-full bg-green-900/30 hover:bg-green-500 hover:text-black border border-green-500 text-green-500 py-4 rounded font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 group"
+                        >
+                            <Icons.play />
+                            <span>Accept Mission</span>
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Sub-Components ---
+
+        const ChallengeItem = ({ challenge, isComplete, onToggle }) => {
+            const [expanded, setExpanded] = useState(false);
+
+            return (
+                <div className={`
+                    bg-slate-800 rounded-lg border transition-all duration-300 overflow-hidden
+                    ${isComplete ? 'border-green-500/50 bg-green-900/10' : 'border-slate-700 hover:border-indigo-500'}
+                `}>
+                    <div 
+                        className="p-4 flex items-center gap-4 cursor-pointer"
+                        onClick={() => setExpanded(!expanded)}
+                    >
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onToggle(challenge.id);
+                            }}
+                            className={`
+                                flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all
+                                ${isComplete 
+                                    ? 'bg-green-500 border-green-500 text-white' 
+                                    : 'border-slate-600 hover:border-indigo-400 text-transparent'}
+                            `}
+                        >
+                            <Icons.check />
+                        </button>
+                        
+                        <div className="flex-1">
+                            <h4 className={`font-semibold ${isComplete ? 'text-green-400' : 'text-slate-200'}`}>
+                                {challenge.title}
+                            </h4>
+                        </div>
+                        
+                        <div className={`transition-transform duration-300 text-slate-500 ${expanded ? 'rotate-180' : ''}`}>
+                            <Icons.chevronDown />
+                        </div>
+                    </div>
+
+                    <div className={`
+                        bg-slate-900/50 px-4 transition-all duration-300 ease-in-out
+                        ${expanded ? 'max-h-40 py-4 opacity-100' : 'max-h-0 py-0 opacity-0'}
+                    `}>
+                        <p className="text-slate-300 text-sm mb-3">{challenge.mission}</p>
+                        <div className="flex gap-2 items-start bg-indigo-900/20 p-2 rounded border border-indigo-500/20">
+                            <span className="text-indigo-400 text-xs font-bold uppercase mt-0.5">Hint:</span>
+                            <span className="text-indigo-200 text-xs italic">{challenge.hint}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const LevelSection = ({ level, completedIds, toggleId, isLocked, isPreviousComplete }) => {
+            const LevelIcon = Icons[level.icon];
+            
+            // Calc progress for this specific level
+            const levelChallengeIds = level.challenges.map(c => c.id);
+            const completedCount = levelChallengeIds.filter(id => completedIds.includes(id)).length;
+            const totalCount = levelChallengeIds.length;
+            const isLevelComplete = completedCount === totalCount;
+
+            if (isLocked) {
+                return (
+                    <div className="level-card-locked rounded-xl p-6 border border-slate-700 opacity-50 relative overflow-hidden grayscale">
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <div className="bg-slate-900 px-6 py-3 rounded-full border border-slate-600 flex items-center gap-3 shadow-xl">
+                                <span className="text-slate-400"><Icons.lock /></span>
+                                <span className="font-bold text-slate-300">Complete Previous Rank to Unlock</span>
+                            </div>
+                        </div>
+                        <div className="blur-sm flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-2xl bg-slate-700 flex items-center justify-center">
+                                <LevelIcon />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-300">{level.title}</h2>
+                                <p className="text-slate-500">{level.subtitle}</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className={`
+                    rounded-xl border-2 transition-all duration-500 animate-slide-up relative overflow-hidden
+                    ${isLevelComplete 
+                        ? 'bg-slate-900 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]' 
+                        : 'bg-slate-800 border-indigo-500/30 shadow-lg'}
+                `}>
+                    {/* Header */}
+                    <div className="p-6 border-b border-slate-700/50 flex items-center gap-5 relative z-10">
+                        <div className={`
+                            w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-inner
+                            ${isLevelComplete ? 'bg-green-600' : `bg-${level.color}-600`}
+                            ${!isLevelComplete && 'animate-pulse'}
+                        `} style={{backgroundColor: isLevelComplete ? '#16a34a' : '' /* Tailwind dynamic color fallback fix needed if using safelist, but inline style works better for dynamic logic */}}>
+                             <div className={level.color === 'blue' ? 'text-blue-200' : level.color === 'purple' ? 'text-purple-200' : level.color === 'orange' ? 'text-orange-200' : 'text-rose-200'}>
+                                <LevelIcon />
+                             </div>
+                        </div>
+                        
+                        <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-white">{level.title}</h2>
+                                    <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">{level.subtitle}</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className={`text-2xl font-black ${isLevelComplete ? 'text-green-400' : 'text-white'}`}>
+                                        {completedCount}<span className="text-slate-500 text-lg">/{totalCount}</span>
+                                    </span>
+                                </div>
+                            </div>
+                            {/* Progress Bar */}
+                            <div className="w-full h-2 bg-slate-900 rounded-full mt-3 overflow-hidden border border-slate-700">
+                                <div 
+                                    className={`h-full transition-all duration-500 ${isLevelComplete ? 'bg-green-500' : 'bg-indigo-500'}`}
+                                    style={{ width: `${(completedCount / totalCount) * 100}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Challenges List */}
+                    <div className="p-4 space-y-3 bg-slate-800/50">
+                        {level.challenges.map(challenge => (
+                            <ChallengeItem 
+                                key={challenge.id}
+                                challenge={challenge}
+                                isComplete={completedIds.includes(challenge.id)}
+                                onToggle={toggleId}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Completion Banner */}
+                    {isLevelComplete && (
+                        <div className="bg-green-500/10 p-3 text-center border-t border-green-500/30">
+                            <p className="text-green-400 font-bold tracking-widest uppercase text-sm">Rank Complete</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [completedIds, setCompletedIds] = useState(() => {
+                const saved = localStorage.getItem('sphero-space-progress');
+                return saved ? JSON.parse(saved) : [];
+            });
+            const [showLevelUp, setShowLevelUp] = useState(false);
+            const [lastUnlockedIndex, setLastUnlockedIndex] = useState(0);
+            
+            // Show briefing if no progress has been made yet
+            const [showBriefing, setShowBriefing] = useState(() => {
+                return completedIds.length === 0;
+            });
+
+            // Determine which levels are locked
+            // A level is unlocked if the previous level is fully complete
+            const levelStatuses = useMemo(() => {
+                let unlockedIndex = 0;
+                
+                const statuses = GAME_DATA.map((level, index) => {
+                    // Check if previous level is complete
+                    let isLocked = false;
+                    if (index > 0) {
+                        const prevLevelIds = GAME_DATA[index - 1].challenges.map(c => c.id);
+                        const prevComplete = prevLevelIds.every(id => completedIds.includes(id));
+                        if (!prevComplete) isLocked = true;
+                    }
+                    
+                    if (!isLocked) unlockedIndex = index;
+
+                    return { ...level, isLocked };
+                });
+
+                return { statuses, unlockedIndex };
+            }, [completedIds]);
+
+            // Detect Level Up Event
+            useEffect(() => {
+                if (levelStatuses.unlockedIndex > lastUnlockedIndex) {
+                    setShowLevelUp(true);
+                    fireLevelUpConfetti();
+                    setTimeout(() => setShowLevelUp(false), 3000);
+                    setLastUnlockedIndex(levelStatuses.unlockedIndex);
+                }
+            }, [levelStatuses.unlockedIndex, lastUnlockedIndex]);
+
+            // Save
+            useEffect(() => {
+                localStorage.setItem('sphero-space-progress', JSON.stringify(completedIds));
+            }, [completedIds]);
+
+            const toggleChallenge = (id) => {
+                setCompletedIds(prev => 
+                    prev.includes(id) 
+                        ? prev.filter(c => c !== id) 
+                        : [...prev, id]
+                );
+            };
+
+            const resetProgress = () => {
+                if(confirm("Reset all mission data? This cannot be undone.")) {
+                    setCompletedIds([]);
+                    setLastUnlockedIndex(0);
+                    setShowBriefing(true); // Re-show briefing on reset
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            // Calculate Total Progress
+            const totalChallenges = GAME_DATA.reduce((acc, lvl) => acc + lvl.challenges.length, 0);
+            const totalCompleted = completedIds.length;
+            const progressPercent = Math.round((totalCompleted / totalChallenges) * 100);
+
+            return (
+                <div className="min-h-screen pb-24 relative overflow-x-hidden font-sans">
+                    
+                    {/* Mission Briefing Overlay */}
+                    {showBriefing && <MissionBriefing onStart={() => setShowBriefing(false)} />}
+
+                    {/* Level Up Overlay */}
+                    {showLevelUp && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+                            <div className="text-center transform animate-bounce">
+                                <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-500 drop-shadow-lg mb-4">
+                                    LEVEL UP!
+                                </h1>
+                                <p className="text-2xl text-white font-bold tracking-widest uppercase">New Rank Unlocked</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Header */}
+                    <header className="bg-slate-900/90 backdrop-blur border-b border-indigo-500/30 sticky top-0 z-40">
+                        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="text-indigo-500 animate-spin-slow">
+                                    <Icons.rocket />
+                                </div>
+                                <h1 className="text-xl font-black tracking-tight text-white">
+                                    SPHERO <span className="text-indigo-400">SPACE</span>
+                                </h1>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <span className="text-xs text-indigo-300 uppercase font-bold tracking-wider mb-1">Mission Progress</span>
+                                <div className="w-32 h-2 bg-slate-800 rounded-full border border-slate-700">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700"
+                                        style={{ width: `${progressPercent}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="max-w-3xl mx-auto px-4 py-8 space-y-12">
+                        
+                        <div className="text-center space-y-2 mb-8">
+                            <p className="text-indigo-300 font-medium">Welcome to the Academy, Cadet.</p>
+                            <p className="text-slate-400 text-sm">Complete all challenges in a rank to be promoted.</p>
+                        </div>
+
+                        {levelStatuses.statuses.map((level, idx) => (
+                            <LevelSection 
+                                key={level.id}
+                                level={level}
+                                completedIds={completedIds}
+                                toggleId={toggleChallenge}
+                                isLocked={level.isLocked}
+                            />
+                        ))}
+
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="border-t border-slate-800 bg-slate-900 mt-12 py-8">
+                        <div className="max-w-3xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-slate-500 text-sm">
+                            <p>Sphero Space Academy: Year 3 Edition</p>
+                            <button 
+                                onClick={resetProgress}
+                                className="flex items-center gap-2 hover:text-rose-400 transition-colors"
+                            >
+                                <Icons.refresh /> Reset Data
+                            </button>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
