@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sphero Space Academy</title>
     
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -188,7 +185,8 @@
                         id: 'c3_3',
                         title: 'Square Orbit',
                         mission: 'Program your robot to drive in a perfect square shape.',
-                        hint: 'Sphero directions do not reset! Your 4 Roll blocks need headings of 0°, 90°, 180°, and finally 270°.'
+                        hint: 'Sphero directions do not reset! Your 4 Roll blocks need headings of 0°, 90°, 180°, and finally 270°.',
+                        requiresVerification: true
                     }
                 ]
             },
@@ -203,7 +201,8 @@
                         id: 'c4_1',
                         title: 'Parallel Park',
                         mission: 'Drive forward past a parking spot, then reverse into it.',
-                        hint: 'This requires careful planning. Break the problem down into small steps.'
+                        hint: 'This requires careful planning. Break the problem down into small steps.',
+                        requiresVerification: true
                     },
                     {
                         id: 'c4_2',
@@ -215,7 +214,36 @@
                         id: 'c4_3',
                         title: 'Blind Navigator',
                         mission: 'Turn your back to the robot. Have a partner read out instructions for you to code.',
-                        hint: 'Communication is key! Your partner must use clear directional language and numbers.'
+                        hint: 'Communication is key! Your partner must use clear directional language and numbers.',
+                        requiresVerification: true
+                    }
+                ]
+            },
+            {
+                id: 'rank_5',
+                title: 'Supernova Class',
+                subtitle: 'Lights & Sounds',
+                icon: 'music',
+                color: 'teal',
+                challenges: [
+                    {
+                        id: 'c5_1',
+                        title: 'Space Ambulance',
+                        mission: 'Drive fast while flashing red and blue lights, and playing a siren sound.',
+                        hint: 'Use the "Play Sound" block. It takes time for sound to play, so test where it fits best in your loop!'
+                    },
+                    {
+                        id: 'c5_2',
+                        title: 'Alien Translator',
+                        mission: 'Make the robot play a different random sound every time it turns a corner.',
+                        hint: 'Put a "Play Sound" block right after every "Roll" block when you make a turn.'
+                    },
+                    {
+                        id: 'c5_3',
+                        title: 'Victory Dance',
+                        mission: 'Spin in a circle, turn your lights gold, and play a "Cheer" sound to celebrate.',
+                        hint: 'Use a Spin block, a Main LED block, and a Play Sound block at the very end of your code.',
+                        requiresVerification: true
                     }
                 ]
             }
@@ -227,16 +255,18 @@
             navigation: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>,
             star: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
             crown: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>,
+            music: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
             lock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
             check: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
             chevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
-            refresh: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
-            play: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            refresh: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 0 20.49 15"/></svg>,
+            play: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+            badge: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
         };
 
         // --- Confetti Effect ---
         const fireLevelUpConfetti = () => {
-            const colors = ['#60a5fa', '#a78bfa', '#f472b6', '#34d399', '#fbbf24'];
+            const colors = ['#60a5fa', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#2dd4bf'];
             for (let i = 0; i < 150; i++) {
                 const piece = document.createElement('div');
                 piece.classList.add('confetti-piece');
@@ -252,7 +282,7 @@
         // --- Mission Briefing Component (New) ---
         const MissionBriefing = ({ onStart }) => {
             const [text, setText] = useState("");
-            const fullText = "INCOMING TRANSMISSION...\nSOURCE: SPHERO COMMAND\nTARGET: WESLEY COLLEGE YEAR 3\n\nHELLO, JUNIOR CADETS.\n\nWELCOME TO THE INTERMEDIATE SPACE ACADEMY.\nYOUR MISSION: MASTER NAVIGATION, ANGLES, AND LOOPS.\n\nYOU WILL NEED TO TEST AND DEBUG YOUR CODE.\nWORK TOGETHER AND BE PRECISE.\n\nTHE GALAXY IS WAITING.\n\nEND TRANSMISSION.";
+            const fullText = "INCOMING TRANSMISSION...\nSOURCE: SPHERO COMMAND\nTARGET: WESLEY COLLEGE YEAR 3\n\nHELLO, JUNIOR CADETS.\n\nWELCOME TO THE INTERMEDIATE SPACE ACADEMY.\nYOUR MISSION: MASTER NAVIGATION, ANGLES, AND LOOPS.\n\nYOU WILL NEED TO TEST AND DEBUG YOUR CODE.\nWORK TOGETHER AND BE PRECISE.\n\nCOMPLETE ALL MISSIONS TO REACH THE ULTIMATE SUPERNOVA RANK.\n\nTHE GALAXY IS WAITING.\n\nEND TRANSMISSION.";
             
             useEffect(() => {
                 let index = 0;
@@ -294,7 +324,65 @@
 
         // --- Sub-Components ---
 
-        const ChallengeItem = ({ challenge, isComplete, onToggle }) => {
+        const AuthModal = ({ challenge, onSuccess, onCancel }) => {
+            const [code, setCode] = useState("");
+            const [error, setError] = useState(false);
+            const AUTH_CODE = "4321"; // Teacher PIN
+
+            const handlePress = (num) => {
+                if (error) { setCode(""); setError(false); }
+                const newCode = code + num;
+                if (newCode.length <= 4) setCode(newCode);
+
+                if (newCode.length === 4) {
+                    if (newCode === AUTH_CODE) {
+                        setTimeout(onSuccess, 300);
+                    } else {
+                        setError(true);
+                        setTimeout(() => { setCode(""); setError(false); }, 800);
+                    }
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-slate-800 border-2 border-indigo-500 rounded-xl max-w-sm w-full p-6 shadow-2xl relative">
+                        <button onClick={onCancel} className="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
+                        
+                        <div className="text-center mb-6">
+                            <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Icons.badge />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-1">Teacher Verification</h3>
+                            <p className="text-sm text-slate-400">Show your teacher you completed <span className="text-indigo-300 font-bold">"{challenge.title}"</span> to get the Auth Code.</p>
+                        </div>
+
+                        <div className="flex justify-center gap-3 mb-6">
+                            {[0, 1, 2, 3].map(i => (
+                                <div key={i} className={`w-12 h-14 rounded border-2 flex items-center justify-center text-2xl font-black transition-colors ${error ? 'border-red-500 text-red-500 bg-red-500/10' : code.length > i ? 'border-indigo-400 text-indigo-400 bg-indigo-400/10' : 'border-slate-600 text-slate-600 bg-slate-900'}`}>
+                                    {code.length > i ? '*' : ''}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                                <button key={num} onClick={() => handlePress(num.toString())} className="bg-slate-700 hover:bg-indigo-600 text-white font-bold py-4 rounded-lg text-xl transition-colors active:scale-95">
+                                    {num}
+                                </button>
+                            ))}
+                            <div className="col-start-2">
+                                <button onClick={() => handlePress('0')} className="w-full bg-slate-700 hover:bg-indigo-600 text-white font-bold py-4 rounded-lg text-xl transition-colors active:scale-95">
+                                    0
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ChallengeItem = ({ challenge, isComplete, onToggle, onRequestVerify }) => {
             const [expanded, setExpanded] = useState(false);
 
             return (
@@ -309,21 +397,30 @@
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onToggle(challenge.id);
+                                if (challenge.requiresVerification && !isComplete) {
+                                    onRequestVerify(challenge);
+                                } else {
+                                    onToggle(challenge.id);
+                                }
                             }}
                             className={`
-                                flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all
+                                flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all relative
                                 ${isComplete 
                                     ? 'bg-green-500 border-green-500 text-white' 
-                                    : 'border-slate-600 hover:border-indigo-400 text-transparent'}
+                                    : challenge.requiresVerification 
+                                        ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400' 
+                                        : 'border-slate-600 hover:border-indigo-400 text-transparent'}
                             `}
                         >
-                            <Icons.check />
+                            {isComplete ? <Icons.check /> : challenge.requiresVerification ? <Icons.badge /> : <Icons.check />}
                         </button>
                         
                         <div className="flex-1">
-                            <h4 className={`font-semibold ${isComplete ? 'text-green-400' : 'text-slate-200'}`}>
+                            <h4 className={`font-semibold flex items-center gap-2 ${isComplete ? 'text-green-400' : 'text-slate-200'}`}>
                                 {challenge.title}
+                                {challenge.requiresVerification && !isComplete && (
+                                    <span className="text-[10px] uppercase bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30">Verify</span>
+                                )}
                             </h4>
                         </div>
                         
@@ -346,7 +443,7 @@
             );
         };
 
-        const LevelSection = ({ level, completedIds, toggleId, isLocked, isPreviousComplete }) => {
+        const LevelSection = ({ level, completedIds, toggleId, isLocked, onRequestVerify }) => {
             const LevelIcon = Icons[level.icon];
             
             // Calc progress for this specific level
@@ -377,6 +474,18 @@
                 );
             }
 
+            // Fallback colors to ensure dynamic classes work correctly if not pre-compiled
+            const getTextColor = (color) => {
+                const map = {
+                    'blue': 'text-blue-200',
+                    'purple': 'text-purple-200',
+                    'orange': 'text-orange-200',
+                    'rose': 'text-rose-200',
+                    'teal': 'text-teal-200'
+                };
+                return map[color] || 'text-slate-200';
+            };
+
             return (
                 <div className={`
                     rounded-xl border-2 transition-all duration-500 animate-slide-up relative overflow-hidden
@@ -390,8 +499,8 @@
                             w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-inner
                             ${isLevelComplete ? 'bg-green-600' : `bg-${level.color}-600`}
                             ${!isLevelComplete && 'animate-pulse'}
-                        `} style={{backgroundColor: isLevelComplete ? '#16a34a' : '' /* Tailwind dynamic color fallback fix needed if using safelist, but inline style works better for dynamic logic */}}>
-                             <div className={level.color === 'blue' ? 'text-blue-200' : level.color === 'purple' ? 'text-purple-200' : level.color === 'orange' ? 'text-orange-200' : 'text-rose-200'}>
+                        `} style={{backgroundColor: isLevelComplete ? '#16a34a' : ''}}>
+                             <div className={getTextColor(level.color)}>
                                 <LevelIcon />
                              </div>
                         </div>
@@ -426,6 +535,7 @@
                                 challenge={challenge}
                                 isComplete={completedIds.includes(challenge.id)}
                                 onToggle={toggleId}
+                                onRequestVerify={onRequestVerify}
                             />
                         ))}
                     </div>
@@ -447,6 +557,7 @@
             });
             const [showLevelUp, setShowLevelUp] = useState(false);
             const [lastUnlockedIndex, setLastUnlockedIndex] = useState(0);
+            const [verifyingChallenge, setVerifyingChallenge] = useState(null);
             
             // Show briefing if no progress has been made yet
             const [showBriefing, setShowBriefing] = useState(() => {
@@ -515,6 +626,18 @@
             return (
                 <div className="min-h-screen pb-24 relative overflow-x-hidden font-sans">
                     
+                    {/* Verification Modal */}
+                    {verifyingChallenge && (
+                        <AuthModal 
+                            challenge={verifyingChallenge}
+                            onSuccess={() => {
+                                toggleChallenge(verifyingChallenge.id);
+                                setVerifyingChallenge(null);
+                            }}
+                            onCancel={() => setVerifyingChallenge(null)}
+                        />
+                    )}
+
                     {/* Mission Briefing Overlay */}
                     {showBriefing && <MissionBriefing onStart={() => setShowBriefing(false)} />}
 
@@ -568,6 +691,7 @@
                                 completedIds={completedIds}
                                 toggleId={toggleChallenge}
                                 isLocked={level.isLocked}
+                                onRequestVerify={setVerifyingChallenge}
                             />
                         ))}
 
@@ -576,7 +700,10 @@
                     {/* Footer */}
                     <footer className="border-t border-slate-800 bg-slate-900 mt-12 py-8">
                         <div className="max-w-3xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-slate-500 text-sm">
-                            <p>Sphero Space Academy: Year 3 Edition</p>
+                            <div>
+                                <p>Sphero Space Academy: Year 3 Edition</p>
+                                <p className="text-xs text-slate-600 mt-1">Teacher Auth Code: 4321</p>
+                            </div>
                             <button 
                                 onClick={resetProgress}
                                 className="flex items-center gap-2 hover:text-rose-400 transition-colors"
